@@ -31,7 +31,7 @@ const haversineDistance = ([lat1, lon1], [lat2, lon2]) => {
 };
 
 const fetchCoords = async (stationName) => {
-  const apiKey = "74796fe5-c44e-403a-b715-a6e954b3118e"; // 🔑 Вставьте сюда свой API-ключ
+  const apiKey = "ВАШ_API_КЛЮЧ"; // 🔑 Вставьте сюда свой API-ключ
   const url = `https://geocode-maps.yandex.ru/1.x/?format=json&apikey=${apiKey}&geocode=метро ${encodeURIComponent(
     stationName
   )}, Москва`;
@@ -82,6 +82,29 @@ const NearestPickupPoint = () => {
   const generateLetter = () => {
     if (!result) return "";
 
+    let volunteerMessage = "";
+    let volunteerCount = 0;
+    let volunteerContacts = [];
+
+    const letterBody = result.nearestPoints
+      .map((point, index) => {
+        if (point.isVolunteer) {
+          volunteerCount += 1;
+          volunteerContacts.push(point); // Собираем волонтёров
+          return `- у нашего волонтёра в районе м. ${point.nearestMetro}, контакт волонтёра, с которым можно обсудить передачу помощи: ${point.phone}, ${point.name}.`;
+        } else {
+          return `- в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}.`;
+        }
+      })
+      .join("\n");
+
+    if (volunteerCount === 1) {
+      volunteerMessage = `Не затруднит ли вас связаться с волонтёром самостоятельно, чтобы согласовать все детали напрямую? При обращении можете сказать, что контакт вам дали в фонде 'РЭЙ'.`;
+    } else if (volunteerCount > 1) {
+      volunteerMessage = `Не затруднит ли вас связаться с выбранным волонтёром самостоятельно, чтобы согласовать все детали напрямую? При обращении можете сказать, что контакт вам дали в фонде 'РЭЙ'.`;
+    }
+
+    // Генерация письма
     return `${username}, добрый день!
 
 Благодарим вас за неравнодушие к бездомным животным и обращение в наш фонд!
@@ -90,26 +113,14 @@ const NearestPickupPoint = () => {
 
 Мы будем вам очень признательны, если вы сможете передать их в один из пунктов сбора помощи, расположенных в следующих местах:
 
-${result.nearestPoints
-  .map((point, index) => {
-    const volunteerMessage = `Не затруднит ли вас связаться с ${
-      result.nearestPoints.length === 1 ? "волонтёром" : "выбранным волонтёром"
-    } самостоятельно, чтобы согласовать все детали напрямую? При обращении можете сказать, что контакт вам дали в фонде "РЭЙ".`;
+${letterBody}
 
-    return `- ${
-      point.workingHours
-        ? `в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}.`
-        : `у нашего волонтёра в районе м. ${point.nearestMetro}, контакт волонтёра, с которым можно обсудить передачу помощи: ${point.phone}, ${point.name}.`
-    }`;
-  })
-  .join("\n")}
-
-${result.nearestPoints.length > 1 ? "Не затруднит ли вас связаться с выбранным волонтёром самостоятельно, чтобы согласовать все детали напрямую? При обращении можете сказать, что контакт вам дали в фонде 'РЭЙ'." : ""}
+${volunteerMessage}
 
 Если передать помощь не получится по какой-либо причине, пожалуйста, напишите нам снова.
 
 Спасибо!`;
-  };
+};
 
   return (
     <div className="p-4 max-w-xl mx-auto bg-white shadow rounded-xl">
@@ -118,45 +129,44 @@ ${result.nearestPoints.length > 1 ? "Не затруднит ли вас свя�
       <input
         type="text"
         placeholder="Введите станцию метро (например, Октябрьское поле)"
+        className="p-2 mb-4 border border-gray-300 rounded"
         value={station}
         onChange={(e) => setStation(e.target.value)}
-        className="border p-2 w-full mb-2 rounded"
       />
       <input
         type="text"
         placeholder="Введите ваше имя"
+        className="p-2 mb-4 border border-gray-300 rounded"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        className="border p-2 w-full mb-2 rounded"
       />
 
       <button
         onClick={handleSearch}
-        disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        className="p-2 bg-blue-500 text-white rounded"
       >
-        {loading ? "Поиск..." : "Найти ближайший пункт"}
+        Найти пункт
       </button>
 
-      {result && (
-        <div className="mt-4">
-          <div className="mt-4 p-2 bg-gray-100 rounded">
-            <p className="font-bold">📍 Техническая информация:</p>
-            <ul className="list-disc pl-4">
-              {result.nearestPoints.map((point, index) => (
-                <li key={index}>
-                  {point.name} — {point.distance} км
-                </li>
-              ))}
-            </ul>
-          </div>
+      {loading ? (
+        <div className="mt-4 p-2 text-gray-500">Загрузка...</div>
+      ) : result ? (
+        <div className="mt-4 p-2 bg-gray-100 rounded">
+          <p className="font-bold">Ближайшие пункты:</p>
+          <ul>
+            {result.nearestPoints.map((point, index) => (
+              <li key={index}>
+                {point.name} — {point.distance} км
+              </li>
+            ))}
+          </ul>
 
           <div className="mt-4 p-2 bg-gray-100 rounded">
             <p className="font-bold">✉️ Сгенерированное письмо:</p>
             <pre className="bg-white p-4 border rounded text-sm">{generateLetter()}</pre>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
