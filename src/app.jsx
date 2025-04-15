@@ -94,8 +94,8 @@ ${result.nearestPoints
     (point) =>
       `- ${
         point.workingHours
-          ? `в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}. Расстояние до этого пункта: ${point.distance} км.`
-          : `у нашего волонтёра на ${point.address}, контакт волонтёра, с которым можно обсудить передачу помощи - ${point.phone}, ${point.name}. Расстояние до этого пункта: ${point.distance} км.`
+          ? `в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}.`
+          : `у нашего волонтёра в районе м. ${point.nearestMetro}, контакт волонтёра, с которым можно обсудить передачу помощи: ${point.phone}, ${point.name}.`
       }`
   )
   .join("\n")}
@@ -157,5 +157,4 @@ ${result.nearestPoints
 };
 
 export default NearestPickupPoint;
-
 
