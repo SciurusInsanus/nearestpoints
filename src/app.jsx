@@ -46,6 +46,7 @@ const NearestPickupPoint = () => {
   const [station, setStation] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
 
   const handleSearch = async () => {
     setLoading(true);
@@ -78,6 +79,34 @@ const NearestPickupPoint = () => {
     setLoading(false);
   };
 
+  const generateLetter = () => {
+    if (!result) return "";
+    return `${username}, добрый день!
+
+Благодарим вас за неравнодушие к бездомным животным и обращение в наш фонд!
+
+Перечисленные вами вещи с радостью примут в приютах! 
+
+Мы будем вам очень признательны, если вы сможете передать их в один из пунктов сбора помощи, расположенных в следующих местах:
+
+${result.nearestPoints
+  .map(
+    (point) =>
+      `- ${
+        point.workingHours
+          ? `в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}.`
+          : `у нашего волонтёра на ${point.address}, контакт волонтёра, с которым можно обсудить передачу помощи - ${point.phone}, ${point.name}.`
+      }`
+  )
+  .join("\n")}
+
+Не затруднит ли вас связаться с волонтером самостоятельно, чтобы согласовать все детали напрямую? При обращении можете сказать, что контакт вам дали в фонде "РЭЙ".
+
+Если передать помощь не получится по какой-либо причине, пожалуйста, напишите нам снова.
+
+Спасибо!`;
+  };
+
   return (
     <div className="p-4 max-w-xl mx-auto bg-white shadow rounded-xl">
       <h2 className="text-xl font-bold mb-4">Поиск ближайшего пункта сбора</h2>
@@ -87,6 +116,13 @@ const NearestPickupPoint = () => {
         placeholder="Введите станцию метро (например, Октябрьское поле)"
         value={station}
         onChange={(e) => setStation(e.target.value)}
+        className="border p-2 w-full mb-2 rounded"
+      />
+      <input
+        type="text"
+        placeholder="Введите ваше имя"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
         className="border p-2 w-full mb-2 rounded"
       />
 
@@ -100,26 +136,9 @@ const NearestPickupPoint = () => {
 
       {result && (
         <div className="mt-4">
-          {result.nearestPoints.map((point, index) => (
-            <div key={index} className="mb-4 p-2 border rounded">
-              <p className="mb-1">📍 <strong>{point.name}</strong> ({point.nearestMetro})</p>
-              <p>Адрес: {point.address}</p>
-              <p>Расстояние: {point.distance} км</p>
-              {point.phone && <p>📞 Телефон: {point.phone}</p>}
-              {point.workingHours && <p>🕒 Время работы: {point.workingHours}</p>}
-              {point.isVolunteer && <p>🙋 Волонтёр</p>}
-            </div>
-          ))}
-
           <div className="mt-4 p-2 bg-gray-100 rounded">
             <p className="font-bold">📧 Письмо клиенту:</p>
-            <pre className="text-sm whitespace-pre-wrap">
-{result.nearestPoints.map((point) =>
-`Вы можете передать помощь в пункте "${point.name}" по адресу: ${point.address}.
-Ближайшая станция метро: ${point.nearestMetro}.
-Расстояние от станции "${station}": ${point.distance} км.\n`
-).join("\n")}
-            </pre>
+            <pre className="text-sm whitespace-pre-wrap">{generateLetter()}</pre>
           </div>
         </div>
       )}
@@ -128,3 +147,4 @@ const NearestPickupPoint = () => {
 };
 
 export default NearestPickupPoint;
+
