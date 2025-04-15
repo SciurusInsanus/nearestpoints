@@ -31,7 +31,7 @@ const haversineDistance = ([lat1, lon1], [lat2, lon2]) => {
 };
 
 const fetchCoords = async (stationName) => {
-  const apiKey = "ВАШ_API_КЛЮЧ"; // 🔑 Вставьте сюда свой API-ключ
+  const apiKey = "74796fe5-c44e-403a-b715-a6e954b3118e"; // 🔑 Вставьте сюда свой API-ключ
   const url = `https://geocode-maps.yandex.ru/1.x/?format=json&apikey=${apiKey}&geocode=метро ${encodeURIComponent(
     stationName
   )}, Москва`;
