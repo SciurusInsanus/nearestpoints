@@ -1,52 +1,176 @@
-import React, { useState, useEffect } from "react";
-import { Router, Link } from "wouter";
+import React, { useState } from "react";
 
-/**
-* This code defines the react app
-*
-* Imports the router functionality to provide page navigation
-* Defines the Home function outlining the content on each page
-* Content specific to each page (Home and About) is defined in their components in /pages
-* Each page content is presented inside the overall structure defined here
-* The router attaches the page components to their paths
-*/
+// Пункты сбора
+const pickupPoints = [
+  {
+    name: "Мария",
+    coords: [55.661496, 37.415622],
+    address: "Боровское шоссе, д.2к7",
+  },
+  {
+    name: "Елена",
+    coords: [55.739407, 37.777419],
+    address: "ул. Кусковская, д.17",
+  },
+  {
+    name: "Дарья",
+    coords: [55.587779, 37.603415],
+    address: "Варшавское шоссе, д.141к13",
+  },
+  {
+    name: "Надежда",
+    coords: [55.859615, 37.440658],
+    address: "ул. Фомичёвой, д.14к3",
+  },
+  {
+    name: "Елена",
+    coords: [55.657306, 37.609991],
+    address: "Болотниковская улица, 10А",
+  },
+  {
+    name: "Галина (контактное лицо - Елизавета)",
+    coords: [55.805827, 37.794064],
+    address: "ул. Константина Федина, д 8",
+  },
+  {
+    name: "Анастасия",
+    coords: [55.806762, 37.575109],
+    address: "2-я Хуторская улица, д. 18к2",
+  },
+  {
+    name: "Янош",
+    coords: [55.675245, 37.527920],
+    address: "Ленинский проспект, д.93",
+  },
+  {
+    name: "Зоомагазин «Хитрый нос»",
+    coords: [55.854517, 37.683060],
+    address: "Ярославское шоссе 12к2",
+  },
+  {
+    name: "Ветеринарная клиника «Dr.Vetson»",
+    coords: [55.641122, 37.595501],
+    address: "Балаклавский проспект, д. 9",
+  },
+  {
+    name: "Ветеринарная клиника «Dr.Hug» (Малая Филёвская)",
+    coords: [55.738302, 37.472917],
+    address: "ул. Малая Филёвская, д.12к1",
+  },
+  {
+    name: "Ветеринарная клиника «Dr.Hug» (Хорошёвское шоссе)",
+    coords: [55.781003, 37.537550],
+    address: "Хорошёвское шоссе, д. 38Дс3",
+  },
+  {
+    name: "Ветеринарная клиника «Синица»",
+    coords: [55.724403, 37.410654],
+    address: "ул. Маршала Неделина, д.16с5",
+  },
+  {
+    name: "Ветеринарная клиника \"Пара капибар\"",
+    coords: [55.794032, 37.495078],
+    address: "ул.Народного ополчения, д.48к1",
+  },
+  {
+    name: "Ветеринарная клиника \"Лама рядом\"",
+    coords: [55.718076, 37.433597],
+    address: "ул.Гродненская, д.10",
+  },
+];
 
-// Import and apply CSS stylesheet
-import "./styles/styles.css";
+const metroStations = {
+  "Октябрьское поле": [55.7934, 37.4936],
+  "Сокол": [55.8058, 37.5146],
+  "Таганская": [55.7416, 37.6528],
+};
 
-// Where all of our pages come from
-import PageRouter from "./components/router.jsx";
-
-// The component that adds our Meta tags to the page
-import Seo from './components/seo.jsx';
-
-// Home function that is reflected across the site
-export default function Home() {
-  return (
-    <Router>
-      <Seo />
-      <main role="main" className="wrapper">
-        <div className="content">
-          {/* Router specifies which component to insert here as the main content */}
-          <PageRouter />
-        </div>
-      </main>
-      {/* Footer links to Home and About, Link elements matched in router.jsx */}
-      <footer className="footer">
-        <div className="links">
-          <Link href="/">Home</Link>
-          <span className="divider">|</span>
-          <Link href="/about">About</Link>
-        </div>
-        <a
-          className="btn--remix"
-          target="_top"
-          href="https://glitch.com/edit/#!/remix/glitch-hello-react"
-        >
-          <img src="https://cdn.glitch.com/605e2a51-d45f-4d87-a285-9410ad350515%2FLogo_Color.svg?v=1618199565140" alt="" />
-          Remix on Glitch
-        </a>
-      </footer>
-    </Router>
-  );
+function haversineDistance([lat1, lon1], [lat2, lon2]) {
+  const toRad = (val) => (val * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
+
+const NearestPickupPoint = () => {
+  const [station, setStation] = useState("");
+  const [result, setResult] = useState(null);
+
+  const handleSearch = () => {
+    const stationCoords = metroStations[station];
+    if (!stationCoords) {
+      alert("Станция не найдена. Попробуйте другую.");
+      return;
+    }
+
+    const distances = pickupPoints.map((point) => ({
+      ...point,
+      distance: haversineDistance(stationCoords, point.coords).toFixed(2),
+    }));
+
+    const nearest = distances.reduce((a, b) =>
+      parseFloat(a.distance) < parseFloat(b.distance) ? a : b
+    );
+
+    const routeTimes = {
+      publicTransport: "35 мин",
+      car: "20 мин",
+      walking: "1 ч 10 мин",
+    };
+
+    setResult({ nearest, stationCoords, routeTimes });
+  };
+
+  return (
+    <div className="p-4 max-w-xl mx-auto bg-white shadow rounded-xl">
+      <h2 className="text-xl font-bold mb-4">Поиск ближайшего пункта сбора</h2>
+
+      <input
+        type="text"
+        placeholder="Введите станцию метро (например, Октябрьское поле)"
+        value={station}
+        onChange={(e) => setStation(e.target.value)}
+        className="border p-2 w-full mb-2 rounded"
+      />
+
+      <button
+        onClick={handleSearch}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        Найти ближайший пункт
+      </button>
+
+      {result && (
+        <div className="mt-4">
+          <p className="mb-2">
+            📍 Ближайший пункт: <strong>{result.nearest.name}</strong>
+          </p>
+          <p>Адрес: {result.nearest.address}</p>
+          <p>Расстояние: {result.nearest.distance} км</p>
+          <p>🚌 Общественный транспорт: {result.routeTimes.publicTransport}</p>
+          <p>🚗 Машина: {result.routeTimes.car}</p>
+          <p>🚶 Пешком: {result.routeTimes.walking}</p>
+
+          <div className="mt-4 p-2 bg-gray-100 rounded">
+            <p className="font-bold">📧 Письмо клиенту:</p>
+            <pre className="text-sm whitespace-pre-wrap">
+              {`Вы можете передать помощь в пункте "${result.nearest.name}" по адресу: ${result.nearest.address}.
+Расстояние от метро "${station}": ${result.nearest.distance} км.
+Примерное время в пути:
+- Общественный транспорт: ${result.routeTimes.publicTransport}
+- Машина: ${result.routeTimes.car}
+- Пешком: ${result.routeTimes.walking}`}
+            </pre>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default NearestPickupPoint;
