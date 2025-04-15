@@ -94,8 +94,8 @@ ${result.nearestPoints
     (point) =>
       `- ${
         point.workingHours
-          ? `в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}.`
-          : `у нашего волонтёра на ${point.address}, контакт волонтёра, с которым можно обсудить передачу помощи - ${point.phone}, ${point.name}.`
+          ? `в ветеринарной клинике "${point.name}" по адресу ${point.address}, режим работы: ${point.workingHours}. Расстояние до этого пункта: ${point.distance} км.`
+          : `у нашего волонтёра на ${point.address}, контакт волонтёра, с которым можно обсудить передачу помощи - ${point.phone}, ${point.name}. Расстояние до этого пункта: ${point.distance} км.`
       }`
   )
   .join("\n")}
@@ -137,6 +137,16 @@ ${result.nearestPoints
       {result && (
         <div className="mt-4">
           <div className="mt-4 p-2 bg-gray-100 rounded">
+            <p className="font-bold">📍 Техническая информация:</p>
+            <ul className="list-disc pl-4">
+              {result.nearestPoints.map((point, index) => (
+                <li key={index}>
+                  {point.name} — {point.distance} км
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-4 p-2 bg-gray-100 rounded">
             <p className="font-bold">📧 Письмо клиенту:</p>
             <pre className="text-sm whitespace-pre-wrap">{generateLetter()}</pre>
           </div>
@@ -147,4 +157,5 @@ ${result.nearestPoints
 };
 
 export default NearestPickupPoint;
+
 
