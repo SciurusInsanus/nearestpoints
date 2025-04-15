@@ -25,14 +25,15 @@ const haversineDistance = ([lat1, lon1], [lat2, lon2]) => {
   const dLon = toRad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
     Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
 
 const fetchCoords = async (stationName) => {
-  const apiKey = "74796fe5-c44e-403a-b715-a6e954b3118e"; // 🔑 Yandex API key
+  const apiKey = "74796fe5-c44e-403a-b715-a6e954b3118e"; // Вставь сюда свой API-ключ Яндекс Геокодера
   const url = `https://geocode-maps.yandex.ru/1.x/?format=json&apikey=${apiKey}&geocode=метро ${encodeURIComponent(
     stationName
   )}, Москва`;
@@ -41,37 +42,6 @@ const fetchCoords = async (stationName) => {
   const pos = data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos;
   const [lon, lat] = pos.split(" ").map(Number);
   return [lat, lon];
-};
-
-const fetchRouteTimes = async (from, to) => {
-  const apiKey = "AIzaSyB7J5mkbrV4JsrOz__4GzpD9yXJSIh1S3A"; // 🔑 Вставь свой Google API ключ
-  const base = "https://routes.googleapis.com/directions/v2:computeRoutes";
-  const headers = {
-    "Content-Type": "application/json",
-    "X-Goog-Api-Key": apiKey,
-    "X-Goog-FieldMask": "routes.duration"
-  };
-
-  const makeRequest = async (mode) => {
-    const res = await fetch(base, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        origin: { location: { latLng: { latitude: from[0], longitude: from[1] } } },
-        destination: { location: { latLng: { latitude: to[0], longitude: to[1] } } },
-        travelMode: mode
-      }),
-    });
-    const data = await res.json();
-    const seconds = data.routes?.[0]?.duration?.split("s")[0];
-    return seconds ? Math.round(seconds / 60) + " мин" : "н/д";
-  };
-
-  return {
-    car: await makeRequest("DRIVE"),
-    publicTransport: await makeRequest("TRANSIT"),
-    walking: "≈" + Math.round(haversineDistance(from, to) / 5 * 60) + " мин",
-  };
 };
 
 const NearestPickupPoint = () => {
@@ -83,20 +53,19 @@ const NearestPickupPoint = () => {
     setLoading(true);
     try {
       const stationCoords = await fetchCoords(station);
+
       const distances = pickupPoints.map((point) => ({
         ...point,
         distance: haversineDistance(stationCoords, point.coords).toFixed(2),
       }));
+
       const nearest = distances.reduce((a, b) =>
         parseFloat(a.distance) < parseFloat(b.distance) ? a : b
       );
 
-      const routeTimes = await fetchRouteTimes(stationCoords, nearest.coords);
-
-      setResult({ nearest, stationCoords, routeTimes });
+      setResult({ nearest, stationCoords });
     } catch (e) {
-      alert("Ошибка при поиске маршрутов.");
-      console.error(e);
+      alert("Ошибка при геокодировании станции.");
     }
     setLoading(false);
   };
@@ -128,19 +97,12 @@ const NearestPickupPoint = () => {
           </p>
           <p>Адрес: {result.nearest.address}</p>
           <p>Расстояние: {result.nearest.distance} км</p>
-          <p>🚌 Общественный транспорт: {result.routeTimes.publicTransport}</p>
-          <p>🚗 Машина: {result.routeTimes.car}</p>
-          <p>🚶 Пешком: {result.routeTimes.walking}</p>
 
           <div className="mt-4 p-2 bg-gray-100 rounded">
             <p className="font-bold">📧 Письмо клиенту:</p>
             <pre className="text-sm whitespace-pre-wrap">
 {`Вы можете передать помощь в пункте "${result.nearest.name}" по адресу: ${result.nearest.address}.
-Расстояние от метро "${station}": ${result.nearest.distance} км.
-Примерное время в пути:
-- Общественный транспорт: ${result.routeTimes.publicTransport}
-- Машина: ${result.routeTimes.car}
-- Пешком: ${result.routeTimes.walking}`}
+Расстояние от метро "${station}": ${result.nearest.distance} км.`}
             </pre>
           </div>
         </div>
