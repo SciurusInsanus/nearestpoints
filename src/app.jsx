@@ -4,7 +4,6 @@ const pickupPoints = [
   { name: "Мария", address: "Боровское шоссе, д.2к7", coords: [55.661496, 37.415622], isVolunteer: true, phone: "+79639764558", nearestMetro: "Говорово" },
   { name: "Елена", address: "ул. Кусковская, д.17", coords: [55.739407, 37.777419], isVolunteer: true, phone: "+79032322433", nearestMetro: "Перово" },
   { name: "Дарья", address: "Варшавское шоссе, д.141к13", coords: [55.587779, 37.603415], isVolunteer: true, phone: "+79104742988", nearestMetro: "Аннино" },
-  { name: "Надежда", address: "ул. Фомичёвой, д.14к3", coords: [55.859615, 37.440658], isVolunteer: true, phone: "+79164075941", nearestMetro: "Планерная" },
   { name: "Елена", address: "Болотниковская улица, 10А", coords: [55.657306, 37.609991], isVolunteer: true, phone: "+79169798613", nearestMetro: "Нахимовский проспект" },
   { name: "Галина", address: "ул. Константина Федина, д 8", coords: [55.805827, 37.794064], isVolunteer: true, phone: "+79169810644", nearestMetro: "Щёлковская" },
   { name: "Анастасия", address: "2-я Хуторская улица, д. 18к2", coords: [55.806762, 37.575109], isVolunteer: true, phone: "+79262113585", nearestMetro: "Дмитровская" },
