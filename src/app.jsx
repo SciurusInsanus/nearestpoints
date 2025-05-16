@@ -15,6 +15,7 @@ const pickupPoints = [
   { name: "Синица", address: "ул. Маршала Неделина, д.16с5", coords: [55.724403, 37.410654], workingHours: "9:00-21:00", nearestMetro: "Молодежная" },
   { name: "Пара капибар", address: "ул.Народного ополчения, д.48к1", coords: [55.794032, 37.495078], workingHours: "круглосуточно", nearestMetro: "Октябрьское поле" },
   { name: "Лама рядом", address: "ул.Гродненская, д.10", coords: [55.718076, 37.433597], workingHours: "круглосуточно", nearestMetro: "Давыдково" },
+  { name: "Наш офис", address: "ул.Коцюбинского, д.4", coords: [55.728591, 37.431235], workingHours: "10:00-18:00 по будним дням", nearestMetro: "Кунцевская" },
 ];
 
 const haversineDistance = ([lat1, lon1], [lat2, lon2]) => {
